@@ -4,24 +4,24 @@ public class Balance {
 
     private int amountInPence;
 
-    public Balance(int amount) {
-        this.amountInPence = amount;
+    public Balance(int amountInPence) {
+        this.amountInPence = amountInPence;
     }
 
-    public int getAmount() {
+    public int getAmountInPence() {
         return amountInPence;
     }
 
-    public void setAmountInPence(int amount) {
-        this.amountInPence = amount;
+    public void setAmountInPence(int amountInPence) {
+        this.amountInPence = amountInPence;
     }
 
-    public boolean updateAmount(int amount) {
+    public boolean updateAmountInPence(int amountInPence) {
 
-        if (amount + this.amountInPence < 0) return false;
+        if (amountInPence + this.amountInPence < 0) return false;
 
         else {
-            this.amountInPence += amount;
+            this.amountInPence += amountInPence;
             return true;
         }
     }

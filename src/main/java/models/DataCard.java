@@ -18,6 +18,8 @@ public class DataCard {
     private String pin;
     private Balance balance;
 
+    public DataCard() {}
+
     public DataCard(String name, String email, String mobileNumber, String pin, int amountInPence) {
         this.cardId = generateCardId();
         this.name = name;
@@ -25,6 +27,24 @@ public class DataCard {
         this.mobileNumber = mobileNumber;
         this.pin = pin;
         this.balance = new Balance(amountInPence);
+    }
+
+    public DataCard(String name, String email, String mobileNumber, String pin, Balance balance) {
+        this.cardId = generateCardId();
+        this.name = name;
+        this.email = email;
+        this.mobileNumber = mobileNumber;
+        this.pin = pin;
+        this.balance = balance;
+    }
+
+    public DataCard(String cardId, String name, String email, String mobileNumber, String pin, Balance balance) {
+        this.cardId = cardId;
+        this.name = name;
+        this.email = email;
+        this.mobileNumber = mobileNumber;
+        this.pin = pin;
+        this.balance = balance;
     }
 
     public String getCardId() {

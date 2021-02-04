@@ -10,5 +10,5 @@ public interface DataCardRepository extends MongoRepository<DataCard, String> {
 
     DataCard findByCardId(String cardId);
 
-    BowsFormulaOneDataCard findByEmpID(String empID);
+    BowsFormulaOneDataCard findByEmpId(String empId);
 }

@@ -1,5 +1,6 @@
 package models;
 
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -7,20 +8,26 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @TypeAlias("bowsFormulaOneDataCard")
 public class BowsFormulaOneDataCard extends DataCard {
 
-    private String empID;
+    private String empId;
 
-    public BowsFormulaOneDataCard(String empID, String name, String email, String mobileNumber,
+    public BowsFormulaOneDataCard(String empId, String name, String email, String mobileNumber,
                                   String pin, int amountInPence) {
         super(name, email, mobileNumber, pin, amountInPence);
-        this.empID = empID;
+        this.empId = empId;
+    }
+    @PersistenceConstructor
+    public BowsFormulaOneDataCard(String cardId, String empId, String name, String email, String mobileNumber,
+                                  String pin, Balance balance) {
+        super(cardId, name, email, mobileNumber, pin, balance);
+        this.empId = empId;
     }
 
-    public String getEmpID() {
-        return empID;
+    public String getEmpId() {
+        return empId;
     }
 
-    public void setEmpID(String empID) {
-        this.empID = empID;
+    public void setEmpId(String empId) {
+        this.empId = empId;
     }
 
     @Override
@@ -30,9 +37,9 @@ public class BowsFormulaOneDataCard extends DataCard {
                 ", name='" + super.getName() + '\'' +
                 ", email='" + super.getEmail() + '\'' +
                 ", mobileNumber='" + super.getMobileNumber() + '\'' +
-                ", pin=" + super.getPin() +
-                ", balance=" + super.getBalance().toString() +'\'' +
-                "empID='" + empID + '\'' +
+                ", pin='" + super.getPin() + '\'' +
+                ", balance='" + super.getBalance().toString() +'\'' +
+                "empId='" + empId + '\'' +
                 '}';
     }
 }
