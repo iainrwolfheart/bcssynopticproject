@@ -56,7 +56,7 @@ public class DataCardController {
         }
         else {
             return ResponseEntity.status(HttpStatus.OK).body("name: " + retrievedDetails.getName() + ", " +
-                    "balance: "
+                    "balanceInPence: "
                     + retrievedDetails.getBalance().getAmountInPence() + ", " +
                     "token: " + "placeholder token string");
         }
