@@ -1,6 +1,5 @@
 package models;
 
-import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,12 +14,17 @@ public class BowsFormulaOneDataCard extends DataCard {
         super(name, email, mobileNumber, pin, amountInPence);
         this.empId = empId;
     }
-    @PersistenceConstructor
     public BowsFormulaOneDataCard(String cardId, String empId, String name, String email, String mobileNumber,
                                   String pin, Balance balance) {
         super(cardId, name, email, mobileNumber, pin, balance);
         this.empId = empId;
     }
+
+    public BowsFormulaOneDataCard(String empId) {
+        this.empId = empId;
+    }
+
+    public BowsFormulaOneDataCard() {}
 
     public String getEmpId() {
         return empId;

@@ -18,7 +18,7 @@ public class DataCardController {
     @Autowired
     private DataCardRepository dataCardRepository;
 
-    @PostMapping(value = RouteConstants.DATACARD_ENDPOINT)
+    @PostMapping(RouteConstants.DATACARD_ENDPOINT)
     public ResponseEntity<String> registerDataCard(@RequestBody Map<String, Object> payload) {
         System.out.println(payload.values().toString());
 
@@ -38,10 +38,12 @@ public class DataCardController {
         }
     }
 
-    @PostMapping(value = RouteConstants.DATACARD_ENDPOINT + "/{empId}")
+    @PostMapping(RouteConstants.DATACARD_ENDPOINT + "/{empId}")
     public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
 
         DataCard retrievedDetails;
+
+        System.out.println(dataCardRepository.findByEmpId(empId));
 
         try {
             retrievedDetails = dataCardRepository.findByEmpId(empId);
