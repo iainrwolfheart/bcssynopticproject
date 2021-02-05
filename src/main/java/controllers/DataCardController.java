@@ -25,6 +25,10 @@ public class DataCardController {
     public ResponseEntity<String> registerDataCard(@RequestBody Map<String, Object> payload) {
         System.out.println(payload.values().toString());
 
+        if (!DataCard.validatePinFormat(payload.get("PIN").toString())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("'message': 'Incorrect PIN formatting'");
+        }
+
         String encryptedPin = encryptionService.encryptUserEntry(payload.get("PIN").toString());
 
         BowsFormulaOneDataCard newRegistrationDetails = new BowsFormulaOneDataCard(payload.get("empId").toString(),
@@ -52,20 +56,21 @@ public class DataCardController {
 
         try {
             retrievedDetails = dataCardRepository.findByEmpId(empId);
+
+
+            if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect PIN entry.");
+            }
+            else {
+                return ResponseEntity.status(HttpStatus.OK).body("name: " + retrievedDetails.getName() + ", " +
+                        "balanceInPence: "
+                        + retrievedDetails.getBalance().getAmountInPence() + ", " +
+                        "token: " + "placeholder token string");
+            }
         }
         catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee ID does not exist in the " +
                     "database. Please register your card.");
-        }
-
-        if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect PIN entry.");
-        }
-        else {
-            return ResponseEntity.status(HttpStatus.OK).body("name: " + retrievedDetails.getName() + ", " +
-                    "balanceInPence: "
-                    + retrievedDetails.getBalance().getAmountInPence() + ", " +
-                    "token: " + "placeholder token string");
         }
     }
 }

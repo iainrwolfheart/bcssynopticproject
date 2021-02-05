@@ -95,4 +95,8 @@ public class DataCard {
                 ", balance=" + balance.toString() +
                 '}';
     }
+
+    public static boolean validatePinFormat(String pin) {
+        return pin.matches("[0-9]+") && pin.length() == 4;
+    }
 }
