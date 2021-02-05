@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import repositories.DataCardRepository;
 import services.EncryptionService;
+import services.JwtService;
 
 import java.util.Map;
 
@@ -21,9 +22,23 @@ public class DataCardController<T extends DataCard> {
 
     private EncryptionService encryptionService = new EncryptionService();
 
+    private JwtService jwtService = new JwtService();
+
     @PostMapping(RouteConstants.DATACARD_ENDPOINT)
     public ResponseEntity<String> registerDataCard(@RequestBody Map<String, Object> payload) {
         BowsFormulaOneDataCard newRegistrationDetails;
+
+//        try {
+            if (!jwtService.validateToken(payload.get("token").toString())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("Content-Type", "application/json")
+                        .body("'Error': 'Session has timed out.'");
+            }
+//        } catch (SignatureException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .header("Content-Type", "application/json")
+//                    .body("'Error': 'Failed to authenticate token'");
+//        }
 
         try {
             if (!DataCard.validatePinFormat(payload.get("PIN").toString())) {
@@ -46,7 +61,7 @@ public class DataCardController<T extends DataCard> {
         if (dataCardRepository.findByEmpId(newRegistrationDetails.getEmpId()) != null) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                     .header("Content-Type", "application/json")
-                    .body("'message': 'User with that email already exists'");
+                    .body("'message': 'User with that Employee Id already exists'");
         }
         else {
             dataCardRepository.save(newRegistrationDetails);
@@ -55,19 +70,28 @@ public class DataCardController<T extends DataCard> {
                     .header("Content-Type", "application/json")
                     .body("'balance': '"
                     + newRegistrationDetails.getBalance().getAmountInPence() + "', " +
-                    "'token': '" + "placeholder token string" + "'");
+                    "'token': '" + jwtService.generateToken(newRegistrationDetails) + "'");
         }
     }
 
     @PostMapping(RouteConstants.DATACARD_ENDPOINT + "{empId}")
     public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
-        DataCard retrievedDetails;
+        BowsFormulaOneDataCard retrievedDetails;
+
 
         try {
             retrievedDetails = dataCardRepository.findByEmpId(empId);
 
+//            if (!jwtService.validateToken(payload.get("token").toString(), retrievedDetails)) {
+//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                        .header("Content-Type", "application/json")
+//                        .body("'Error': 'Session has timed out.'");
+//            }
+
             if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect PIN entry.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
+                        header("Content-Type", "application/json")
+                        .body("'Error': 'Incorrect PIN entry.'");
             }
             else {
                 return ResponseEntity.status(HttpStatus.OK)
@@ -75,7 +99,7 @@ public class DataCardController<T extends DataCard> {
                         .body("'name': '" + retrievedDetails.getName() + "', " +
                         "'balanceInPence': '"
                         + retrievedDetails.getBalance().getAmountInPence() + "', " +
-                        "'token': '" + "placeholder token string" + "'");
+                        "'token': '" + jwtService.generateToken(retrievedDetails) + "'");
             }
         } catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
