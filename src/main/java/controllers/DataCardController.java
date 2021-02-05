@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin(RouteConstants.ORIGIN)
-public class DataCardController {
+public class DataCardController<T extends DataCard> {
 
     @Autowired
     private DataCardRepository dataCardRepository;
@@ -23,54 +23,65 @@ public class DataCardController {
 
     @PostMapping(RouteConstants.DATACARD_ENDPOINT)
     public ResponseEntity<String> registerDataCard(@RequestBody Map<String, Object> payload) {
-        System.out.println(payload.values().toString());
+        BowsFormulaOneDataCard newRegistrationDetails;
 
-        if (!DataCard.validatePinFormat(payload.get("PIN").toString())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("'message': 'Incorrect PIN formatting'");
+        try {
+            if (!DataCard.validatePinFormat(payload.get("PIN").toString())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .header("Content-Type", "application/json")
+                        .body("'error': 'Incorrect PIN formatting'");
+            }
+
+            String encryptedPin = encryptionService.encryptUserEntry(payload.get("PIN").toString());
+
+            newRegistrationDetails = new BowsFormulaOneDataCard(payload.get("empId").toString(),
+                    payload.get("name").toString(), payload.get("email").toString(), payload.get("mobileNumber").toString(),
+                    encryptedPin, (int) payload.get("balance"));
+        } catch (NullPointerException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header("Content-Type", "application/json")
+                    .body("'error': 'Invalid request keys.'");
         }
 
-        String encryptedPin = encryptionService.encryptUserEntry(payload.get("PIN").toString());
-
-        BowsFormulaOneDataCard newRegistrationDetails = new BowsFormulaOneDataCard(payload.get("empId").toString(),
-                payload.get("name").toString(), payload.get("email").toString(), payload.get("mobileNumber").toString(),
-                encryptedPin, (int) payload.get("balance"));
-
         if (dataCardRepository.findByEmpId(newRegistrationDetails.getEmpId()) != null) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("User with that email already exists");
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                    .header("Content-Type", "application/json")
+                    .body("'message': 'User with that email already exists'");
         }
         else {
             dataCardRepository.save(newRegistrationDetails);
 
-            return ResponseEntity.status(HttpStatus.OK).body("balance: "
-                    + newRegistrationDetails.getBalance().getAmountInPence() + ", " +
-                    "token: " + "placeholder token string");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .header("Content-Type", "application/json")
+                    .body("'balance': '"
+                    + newRegistrationDetails.getBalance().getAmountInPence() + "', " +
+                    "'token': '" + "placeholder token string" + "'");
         }
     }
 
-    @PostMapping(RouteConstants.DATACARD_ENDPOINT + "/{empId}")
+    @PostMapping(RouteConstants.DATACARD_ENDPOINT + "{empId}")
     public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
-
         DataCard retrievedDetails;
-
-        System.out.println(dataCardRepository.findByEmpId(empId));
 
         try {
             retrievedDetails = dataCardRepository.findByEmpId(empId);
-
 
             if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect PIN entry.");
             }
             else {
-                return ResponseEntity.status(HttpStatus.OK).body("name: " + retrievedDetails.getName() + ", " +
-                        "balanceInPence: "
-                        + retrievedDetails.getBalance().getAmountInPence() + ", " +
-                        "token: " + "placeholder token string");
+                return ResponseEntity.status(HttpStatus.OK)
+                        .header("Content-Type", "application/json")
+                        .body("'name': '" + retrievedDetails.getName() + "', " +
+                        "'balanceInPence': '"
+                        + retrievedDetails.getBalance().getAmountInPence() + "', " +
+                        "'token': '" + "placeholder token string" + "'");
             }
-        }
-        catch (NullPointerException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee ID does not exist in the " +
-                    "database. Please register your card.");
+        } catch (NullPointerException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .header("Content-Type", "application/json")
+                    .body("'message': 'Employee ID does not exist in the " +
+                    "database. Please register your card.'");
         }
     }
 }
