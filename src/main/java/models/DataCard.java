@@ -21,7 +21,7 @@ public class DataCard {
     public DataCard() {}
 
     public DataCard(String name, String email, String mobileNumber, String pin, int amountInPence) {
-        this.cardId = generateCardId();
+        this.cardId = generateCardId(16);
         this.name = name;
         this.email = email;
         this.mobileNumber = mobileNumber;
@@ -30,7 +30,7 @@ public class DataCard {
     }
 
     public DataCard(String name, String email, String mobileNumber, String pin, Balance balance) {
-        this.cardId = generateCardId();
+        this.cardId = generateCardId(16);
         this.name = name;
         this.email = email;
         this.mobileNumber = mobileNumber;
@@ -71,10 +71,9 @@ public class DataCard {
         return balance;
     }
 
-    public String generateCardId() {
+    public String generateCardId(int cardIdDefinedLength) {
 
         List<Character> charList = CardIdService.generateAlphanumericList();
-        int cardIdDefinedLength = 16;
         StringBuilder cardIdBuilder = new StringBuilder();
 
         for (int i = 0; i < cardIdDefinedLength; i++) {

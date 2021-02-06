@@ -28,17 +28,17 @@ public class DataCardController<T extends DataCard> {
     public ResponseEntity<String> registerDataCard(@RequestBody Map<String, Object> payload) {
         BowsFormulaOneDataCard newRegistrationDetails;
 
-//        try {
+        try {
             if (!jwtService.validateToken(payload.get("token").toString())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .header("Content-Type", "application/json")
                         .body("'Error': 'Session has timed out.'");
             }
-//        } catch (SignatureException e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .header("Content-Type", "application/json")
-//                    .body("'Error': 'Failed to authenticate token'");
-//        }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .header("Content-Type", "application/json")
+                    .body("'Error': 'Failed to authenticate token'");
+        }
 
         try {
             if (!DataCard.validatePinFormat(payload.get("PIN").toString())) {
@@ -78,15 +78,26 @@ public class DataCardController<T extends DataCard> {
     public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
         BowsFormulaOneDataCard retrievedDetails;
 
+        try {
+            if (!jwtService.validateToken(payload.get("token").toString())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("Content-Type", "application/json")
+                        .body("'Error': 'Session has timed out.'");
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .header("Content-Type", "application/json")
+                    .body("'Error': 'Failed to authenticate token'");
+        }
 
         try {
             retrievedDetails = dataCardRepository.findByEmpId(empId);
 
-//            if (!jwtService.validateToken(payload.get("token").toString(), retrievedDetails)) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                        .header("Content-Type", "application/json")
-//                        .body("'Error': 'Session has timed out.'");
-//            }
+            if (!jwtService.validateToken(payload.get("token").toString(), retrievedDetails)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .header("Content-Type", "application/json")
+                        .body("'Error': 'Session has timed out.'");
+            }
 
             if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
