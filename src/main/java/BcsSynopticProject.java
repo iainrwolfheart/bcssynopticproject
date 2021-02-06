@@ -4,7 +4,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@ComponentScan(basePackages= {"controllers", "repositories"})
+@ComponentScan(basePackages= {"controllers", "repositories", "services"})
 @EnableMongoRepositories("repositories")
 public class BcsSynopticProject {
 

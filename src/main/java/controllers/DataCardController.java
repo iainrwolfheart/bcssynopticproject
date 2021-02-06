@@ -76,29 +76,15 @@ public class DataCardController<T extends DataCard> {
 
     @PostMapping(RouteConstants.DATACARD_ENDPOINT + "{empId}")
     public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
-        BowsFormulaOneDataCard retrievedDetails;
 
         try {
-            if (!jwtService.validateToken(payload.get("token").toString())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .header("Content-Type", "application/json")
-                        .body("'Error': 'Session has timed out.'");
-            }
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .header("Content-Type", "application/json")
-                    .body("'Error': 'Failed to authenticate token'");
-        }
-
-        try {
-            retrievedDetails = dataCardRepository.findByEmpId(empId);
-
-            if (!jwtService.validateToken(payload.get("token").toString(), retrievedDetails)) {
+            if (!jwtService.validateToken(payload.get("token").toString(), dataCardRepository.findByEmpId(empId))) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .header("Content-Type", "application/json")
                         .body("'Error': 'Session has timed out.'");
             }
 
+            BowsFormulaOneDataCard retrievedDetails = dataCardRepository.findByEmpId(empId);
             if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
                         header("Content-Type", "application/json")
@@ -112,11 +98,10 @@ public class DataCardController<T extends DataCard> {
                         + retrievedDetails.getBalance().getAmountInPence() + "', " +
                         "'token': '" + jwtService.generateToken(retrievedDetails) + "'");
             }
-        } catch (NullPointerException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .header("Content-Type", "application/json")
-                    .body("'message': 'Employee ID does not exist in the " +
-                    "database. Please register your card.'");
+                    .body("'Error': 'Session has timed out.'");
         }
     }
 }
