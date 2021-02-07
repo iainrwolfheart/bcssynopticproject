@@ -77,8 +77,8 @@ public class DataCardController<T extends DataCard> {
     @PostMapping(RouteConstants.DATACARD_ENDPOINT + "{empId}")
     public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
 
-        try {
-            if (!jwtService.validateToken(payload.get("token").toString(), dataCardRepository.findByEmpId(empId))) {
+//        try {
+            if (!jwtService.validateToken(payload.get("token").toString())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .header("Content-Type", "application/json")
                         .body("'Error': 'Session has timed out.'");
@@ -98,10 +98,10 @@ public class DataCardController<T extends DataCard> {
                         + retrievedDetails.getBalance().getAmountInPence() + "', " +
                         "'token': '" + jwtService.generateToken(retrievedDetails) + "'");
             }
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .header("Content-Type", "application/json")
-                    .body("'Error': 'Session has timed out.'");
-        }
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .header("Content-Type", "application/json")
+//                    .body("'Error': 'Session has timed out.'");
+//        }
     }
 }
