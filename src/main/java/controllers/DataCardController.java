@@ -78,6 +78,7 @@ public class DataCardController<T extends DataCard> {
             }
 
             BowsFormulaOneDataCard retrievedDetails = dataCardRepository.findByEmpId(empId);
+
             if (!encryptionService.isCorrectUserEntry(payload.get("PIN").toString(), retrievedDetails.getPin())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).
                         header("Content-Type", "application/json")

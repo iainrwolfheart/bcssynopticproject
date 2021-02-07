@@ -30,10 +30,6 @@ public class BowsFormulaOneDataCard extends DataCard {
         return empId;
     }
 
-    public void setEmpId(String empId) {
-        this.empId = empId;
-    }
-
     @Override
     public String toString() {
         return "BowsFormulaOneDataCard{" +
