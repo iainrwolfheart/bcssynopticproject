@@ -20,16 +20,18 @@ public class DataCardController<T extends DataCard> {
     @Autowired
     private DataCardRepository dataCardRepository;
 
-    private EncryptionService encryptionService = new EncryptionService();
+    @Autowired
+    private EncryptionService encryptionService;
 
-    private JwtService jwtService = new JwtService();
+    @Autowired
+    private JwtService jwtService;
 
     @PostMapping(RouteConstants.DATACARD_ENDPOINT)
-    public ResponseEntity<String> registerDataCard(@RequestBody Map<String, Object> payload) {
-        BowsFormulaOneDataCard newRegistrationDetails;
-
+    public ResponseEntity<String> registerDataCard(@RequestHeader("Authorization") String token,
+                                                   @RequestBody BowsFormulaOneDataCard newRegistrationDetails) {
+        System.out.println(newRegistrationDetails.toString());
         try {
-            if (!jwtService.validateToken(payload.get("token").toString())) {
+            if (!jwtService.validateToken(token)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .header("Content-Type", "application/json")
                         .body("'Error': 'Session has timed out.'");
@@ -40,23 +42,14 @@ public class DataCardController<T extends DataCard> {
                     .body("'Error': 'Failed to authenticate token'");
         }
 
-        try {
-            if (!DataCard.validatePinFormat(payload.get("PIN").toString())) {
+            if (!DataCard.validatePinFormat(newRegistrationDetails.getPin())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .header("Content-Type", "application/json")
                         .body("'error': 'Incorrect PIN formatting'");
             }
 
-            String encryptedPin = encryptionService.encryptUserEntry(payload.get("PIN").toString());
-
-            newRegistrationDetails = new BowsFormulaOneDataCard(payload.get("empId").toString(),
-                    payload.get("name").toString(), payload.get("email").toString(), payload.get("mobileNumber").toString(),
-                    encryptedPin, (int) payload.get("balance"));
-        } catch (NullPointerException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .header("Content-Type", "application/json")
-                    .body("'error': 'Invalid request keys.'");
-        }
+            newRegistrationDetails.setCardId();
+            newRegistrationDetails = encryptionService.encryptNewRegistration(newRegistrationDetails);
 
         if (dataCardRepository.findByEmpId(newRegistrationDetails.getEmpId()) != null) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -68,17 +61,17 @@ public class DataCardController<T extends DataCard> {
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .header("Content-Type", "application/json")
+                    .header("Authorization",jwtService.generateToken(newRegistrationDetails))
                     .body("'balance': '"
-                    + newRegistrationDetails.getBalance().getAmountInPence() + "', " +
-                    "'token': '" + jwtService.generateToken(newRegistrationDetails) + "'");
+                    + newRegistrationDetails.getBalance().getAmountInPence() + "'");
         }
     }
 
     @PostMapping(RouteConstants.DATACARD_ENDPOINT + "{empId}")
-    public ResponseEntity<String> pinEntry(@RequestBody Map<String, Object> payload, @PathVariable String empId) {
+    public ResponseEntity<String> pinEntry(@RequestHeader("Authorization") String token,
+                                           @RequestBody Map<String, Object> payload, @PathVariable String empId) {
 
-//        try {
-            if (!jwtService.validateToken(payload.get("token").toString())) {
+            if (!jwtService.validateToken(token)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .header("Content-Type", "application/json")
                         .body("'Error': 'Session has timed out.'");
@@ -93,15 +86,10 @@ public class DataCardController<T extends DataCard> {
             else {
                 return ResponseEntity.status(HttpStatus.OK)
                         .header("Content-Type", "application/json")
+                        .header("Authorization",jwtService.generateToken(retrievedDetails))
                         .body("'name': '" + retrievedDetails.getName() + "', " +
                         "'balanceInPence': '"
-                        + retrievedDetails.getBalance().getAmountInPence() + "', " +
-                        "'token': '" + jwtService.generateToken(retrievedDetails) + "'");
+                        + retrievedDetails.getBalance().getAmountInPence());
             }
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .header("Content-Type", "application/json")
-//                    .body("'Error': 'Session has timed out.'");
-//        }
     }
 }

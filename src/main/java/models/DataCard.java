@@ -51,6 +51,10 @@ public class DataCard {
         return cardId;
     }
 
+    public void setCardId() {
+        this.cardId = generateCardId(16);
+    }
+
     public String getName() {
         return name;
     }
@@ -65,6 +69,10 @@ public class DataCard {
 
     public String getPin() {
         return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
     }
 
     public Balance getBalance() {

@@ -1,7 +1,7 @@
 package controllers;
 
 import constants.RouteConstants;
-import models.DataCard;
+import models.BowsFormulaOneDataCard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import repositories.DataCardRepository;
+import services.JwtService;
 
 import java.util.Map;
 
@@ -19,10 +20,13 @@ public class BalanceController {
     @Autowired
     private DataCardRepository dataCardRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
     @PutMapping(RouteConstants.BALANCE_ENDPOINT + "{empId}")
     public ResponseEntity<String> updateCardBalance(@PathVariable String empId,
                                                     @RequestBody Map<String, String> payload) {
-        DataCard retrievedDetails;
+        BowsFormulaOneDataCard retrievedDetails;
 
         try {
             retrievedDetails = dataCardRepository.findByEmpId(empId);
@@ -41,10 +45,11 @@ public class BalanceController {
             } else {
                 dataCardRepository.save(retrievedDetails);
 
-                return ResponseEntity.status(HttpStatus.OK).body("'name': '" + retrievedDetails.getName() + "', " +
-                        "'balanceInPence': '"
-                        + retrievedDetails.getBalance().getAmountInPence() + "', " +
-                        "'token': '" + "placeholder token string" + "'");
+                return ResponseEntity.status(HttpStatus.OK)
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + jwtService.generateToken(retrievedDetails))
+                        .body("'name': '" + retrievedDetails.getName() + "', " +
+                        "'balanceInPence': '" + retrievedDetails.getBalance().getAmountInPence());
             }
         } catch (NumberFormatException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

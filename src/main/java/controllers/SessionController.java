@@ -16,7 +16,8 @@ public class SessionController {
     @Autowired
     private DataCardRepository dataCardRepository;
 
-    private JwtService jwtService = new JwtService();
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private DataCardService dataCardService;
@@ -26,12 +27,12 @@ public class SessionController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .header("Content-Type", "application/json")
-                .body("'isRegistered': '" + dataCardService.isCardRegistered(empId) + "', " +
-                "'token': '" + jwtService.generateToken(new BowsFormulaOneDataCard(empId)) + "'");
+                .header("Authorization", jwtService.generateToken(new BowsFormulaOneDataCard(empId)))
+                .body("'isRegistered': '" + dataCardService.isCardRegistered(empId));
     }
 
     @PostMapping(value = RouteConstants.SESSION_ENDPOINT + "{empId}")
-    public ResponseEntity<String> endSession(@PathVariable String empId, @RequestBody String token) {
+    public ResponseEntity<String> endSession(@PathVariable String empId, @RequestHeader("Authorization") String token) {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .header("Content-Type", "application/json")
