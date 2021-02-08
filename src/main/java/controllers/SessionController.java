@@ -34,7 +34,7 @@ public class SessionController {
     @PostMapping(value = RouteConstants.SESSION_ENDPOINT + "{empId}")
     public ResponseEntity<String> endSession(@PathVariable String empId, @RequestHeader("Authorization") String token) {
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .header("Content-Type", "application/json")
                 .body("'message': 'Goodbye'");
     }
