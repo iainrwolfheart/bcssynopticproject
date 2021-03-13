@@ -1,6 +1,5 @@
 package services;
 
-import models.BowsFormulaOneDataCard;
 import models.DataCard;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class EncryptionService<T extends DataCard> {
         return encryptor.checkPassword(userEntry, storedValue);
     }
 
-    public BowsFormulaOneDataCard encryptNewRegistration(BowsFormulaOneDataCard datacard) {
+    public T encryptNewRegistration(T datacard) {
         datacard.setPin(encryptUserEntry(datacard.getPin()));
         return datacard;
     }

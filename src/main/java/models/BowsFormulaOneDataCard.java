@@ -2,26 +2,38 @@ package models;
 
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.stereotype.Component;
 
+@Component
 @Document(collection = "dataCards")
 @TypeAlias("bowsFormulaOneDataCard")
 public class BowsFormulaOneDataCard extends DataCard {
 
     private String empId;
 
+    // Registering without CardId
     public BowsFormulaOneDataCard(String empId, String name, String email, String mobileNumber,
                                   String pin, int amountInPence) {
         super(name, email, mobileNumber, pin, amountInPence);
         this.empId = empId;
+        System.out.println("CONSTRUCTOR 2");
     }
-    public BowsFormulaOneDataCard(String cardId, String empId, String name, String email, String mobileNumber,
-                                  String pin, Balance balance) {
-        super(cardId, name, email, mobileNumber, pin, balance);
+//    Registering w/o initial balance
+    public BowsFormulaOneDataCard(String empId, String name, String email, String mobileNumber,
+                                  String pin) {
+        super(name, email, mobileNumber, pin);
+        this.empId = empId;
+        System.out.println("CONSTRUCTOR 3");
+    }
+    // Login w/EmpId and PIN
+    public BowsFormulaOneDataCard(String empId, String pin) {
+        super(pin);
         this.empId = empId;
     }
-
+//    Start Session
     public BowsFormulaOneDataCard(String empId) {
         this.empId = empId;
+        System.out.println("CONSTRUCTOR 4");
     }
 
     public BowsFormulaOneDataCard() {}
@@ -38,8 +50,8 @@ public class BowsFormulaOneDataCard extends DataCard {
                 ", email='" + super.getEmail() + '\'' +
                 ", mobileNumber='" + super.getMobileNumber() + '\'' +
                 ", pin='" + super.getPin() + '\'' +
-                ", balance='" + super.getBalance().toString() +'\'' +
-                "empId='" + empId + '\'' +
+                ", balance='" + super.getBalanceInPence() +'\'' +
+                ", empId='" + empId + '\'' +
                 '}';
     }
 }

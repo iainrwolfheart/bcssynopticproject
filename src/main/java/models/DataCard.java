@@ -1,13 +1,18 @@
 package models;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import services.CardIdService;
 
 import java.util.List;
 import java.util.Random;
 
-@Document(collection = "dataCards")
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = DataCard.class, name = "standard"),
+        @JsonSubTypes.Type(value = BowsFormulaOneDataCard.class, name = "bows")})
 public class DataCard {
 
     @Id
@@ -16,43 +21,40 @@ public class DataCard {
     private String email;
     private String mobileNumber;
     private String pin;
-    private Balance balance;
+    private int balanceInPence;
+
+    // Registering BowsF1...
+    public DataCard(String name, String email, String mobileNumber, String pin, int balanceInPence) {
+        this.cardId = generateCardId(16);
+        this.name = name;
+        this.email = email;
+        this.mobileNumber = mobileNumber;
+        this.pin = pin;
+        this.balanceInPence = balanceInPence;
+        System.out.println("CONSTRUCTOR 0");
+    }
+    // Registering BowsF1 w/o an initial balance
+    public DataCard(String name, String email, String mobileNumber, String pin) {
+        this.cardId = generateCardId(16);
+        this.name = name;
+        this.email = email;
+        this.mobileNumber = mobileNumber;
+        this.pin = pin;
+        this.balanceInPence = 0;
+        System.out.println("CONSTRUCTOR 1");
+    }
+
+//    Logging in BowsF1
+    public DataCard(String pin) {
+        this.pin = pin;
+        System.out.println("CONSTRUCTOR 5");
+
+    }
 
     public DataCard() {}
 
-    public DataCard(String name, String email, String mobileNumber, String pin, int amountInPence) {
-        this.cardId = generateCardId(16);
-        this.name = name;
-        this.email = email;
-        this.mobileNumber = mobileNumber;
-        this.pin = pin;
-        this.balance = new Balance(amountInPence);
-    }
-
-    public DataCard(String name, String email, String mobileNumber, String pin, Balance balance) {
-        this.cardId = generateCardId(16);
-        this.name = name;
-        this.email = email;
-        this.mobileNumber = mobileNumber;
-        this.pin = pin;
-        this.balance = balance;
-    }
-
-    public DataCard(String cardId, String name, String email, String mobileNumber, String pin, Balance balance) {
-        this.cardId = cardId;
-        this.name = name;
-        this.email = email;
-        this.mobileNumber = mobileNumber;
-        this.pin = pin;
-        this.balance = balance;
-    }
-
     public String getCardId() {
         return cardId;
-    }
-
-    public void setCardId() {
-        this.cardId = generateCardId(16);
     }
 
     public String getName() {
@@ -75,8 +77,8 @@ public class DataCard {
         this.pin = pin;
     }
 
-    public Balance getBalance() {
-        return balance;
+    public int getBalanceInPence() {
+        return balanceInPence;
     }
 
     public String generateCardId(int cardIdDefinedLength) {
@@ -99,11 +101,24 @@ public class DataCard {
                 ", email='" + email + '\'' +
                 ", mobileNumber='" + mobileNumber + '\'' +
                 ", pin=" + pin +
-                ", balance=" + balance.toString() +
+                ", balance=" + balanceInPence +
                 '}';
     }
 
     public static boolean validatePinFormat(String pin) {
         return pin.matches("[0-9]+") && pin.length() == 4;
     }
+
+    public boolean updateBalanceInPence(int balanceInPence) {
+        if (balanceInPence + this.balanceInPence < 0) return false;
+
+        else {
+            this.balanceInPence += balanceInPence;
+            return true;
+        }
+    }
+
+    public void setCardId() {
+        this.cardId = generateCardId(16);
+    };
 }

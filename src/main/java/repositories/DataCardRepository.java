@@ -10,6 +10,7 @@ public interface DataCardRepository<T extends DataCard> extends MongoRepository<
 
     T findByCardId(String cardId);
 
-    BowsFormulaOneDataCard findByEmpId(String empId);
+    T findByEmail(String email);
 
+    BowsFormulaOneDataCard findByEmpId(String empId);
 }
